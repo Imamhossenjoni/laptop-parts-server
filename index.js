@@ -53,12 +53,12 @@ async function run() {
         const part = await partsCollection.deleteOne(query);
         res.send(part);
     })
-    // app.delete('/parts/:id', async (req, res) => {
-    //     const id = req.params.id;
-    //     const query = { _id: ObjectId(id) }
-    //     const order = await partsCollection.deleteOne(query);
-    //     res.send(order);
-    // })
+    app.delete('/parts/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) }
+        const order = await partsCollection.deleteOne(query);
+        res.send(order);
+    })
 
     //post booking
     app.post('/booking', async (req, res) => {
