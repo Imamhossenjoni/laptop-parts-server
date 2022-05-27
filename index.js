@@ -2,6 +2,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const jwt = require('jsonwebtoken')
 const cors = require('cors');
+const res = require('express/lib/response');
 require('dotenv').config();
 const app = express()
 const port = process.env.PORT || 5000;
@@ -59,7 +60,6 @@ async function run() {
         const order = await partsCollection.deleteOne(query);
         res.send(order);
     })
-
     //post booking
     app.post('/booking', async (req, res) => {
       const booking = req.body;
@@ -80,6 +80,13 @@ async function run() {
         return res.status(403).send({ message: 'Forbidden access' })
       }
 
+    })
+    //get spacefic booking
+    app.get('/booking/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:ObjectId(id)};
+      const booking=await bookingCollection.findOne(query);
+      res.send(booking);
     })
     //get users
     app.get('/user', varifyJWT, async (req, res) => {
