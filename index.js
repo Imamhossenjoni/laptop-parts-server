@@ -46,6 +46,19 @@ async function run() {
       const part = await partsCollection.findOne(query);
       res.send(part);
     })
+    // delete parts
+      app.delete('/parts/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) }
+        const part = await partsCollection.deleteOne(query);
+        res.send(part);
+    })
+    // app.delete('/parts/:id', async (req, res) => {
+    //     const id = req.params.id;
+    //     const query = { _id: ObjectId(id) }
+    //     const order = await partsCollection.deleteOne(query);
+    //     res.send(order);
+    // })
 
     //post booking
     app.post('/booking', async (req, res) => {
