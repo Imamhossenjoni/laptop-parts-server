@@ -4,6 +4,11 @@ const jwt = require('jsonwebtoken')
 const cors = require('cors');
 const res = require('express/lib/response');
 require('dotenv').config();
+
+// var nodemailer = require('nodemailer');
+// var sgTransport = require('nodemailer-sendgrid-transport');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const app = express()
 const port = process.env.PORT || 5000;
 
@@ -35,6 +40,7 @@ async function run() {
     const bookingCollection = client.db('laptop_parts').collection('bookings');
     const userCollection = client.db('laptop_parts').collection('users');
     const reviewCollection = client.db('laptop_parts').collection('reviews');
+    const paymentCollection = client.db('laptop_parts').collection('payments');
 
     app.get('/parts', async (req, res) => {
       const query = {};
@@ -49,32 +55,32 @@ async function run() {
       res.send(part);
     })
     // delete parts
-      app.delete('/parts/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: ObjectId(id) }
-        const part = await partsCollection.deleteOne(query);
-        res.send(part);
+    app.delete('/parts/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) }
+      const part = await partsCollection.deleteOne(query);
+      res.send(part);
     })
     app.delete('/parts/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: ObjectId(id) }
-        const order = await partsCollection.deleteOne(query);
-        res.send(order);
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) }
+      const order = await partsCollection.deleteOne(query);
+      res.send(order);
     })
     //review post 
-    app.post('/review',async(req,res)=>{
-        const review=req.body;
-        console.log(review);
-        console.log("this is",req.body.review)
-        const result=await reviewCollection.insertOne(review);
-        res.send(result);
+    app.post('/review', async (req, res) => {
+      const review = req.body;
+      console.log(review);
+      console.log("this is", req.body.review)
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
 
     })
     //review get
-    app.get('/review',async(req,res)=>{
-      const query={};
+    app.get('/review', async (req, res) => {
+      const query = {};
       // const review=req.body;
-      const result=await reviewCollection.find(query).toArray();
+      const result = await reviewCollection.find(query).toArray();
       res.send(result);
     })
     //post booking
@@ -99,10 +105,10 @@ async function run() {
 
     })
     //get spacefic booking
-    app.get('/booking/:id',async(req,res)=>{
-      const id=req.params.id;
-      const query={_id:ObjectId(id)};
-      const booking=await bookingCollection.findOne(query);
+    app.get('/booking/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const booking = await bookingCollection.findOne(query);
       res.send(booking);
     })
     //get users
@@ -111,11 +117,11 @@ async function run() {
       res.send(users)
     })
     //
-    app.get('/admin/:email', async(req, res) =>{
+    app.get('/admin/:email', async (req, res) => {
       const email = req.params.email;
-      const user = await userCollection.findOne({email: email});
+      const user = await userCollection.findOne({ email: email });
       const isAdmin = user.role === 'admin';
-      res.send({admin: isAdmin})
+      res.send({ admin: isAdmin })
     })
 
     // put user
@@ -130,8 +136,8 @@ async function run() {
         }
         const result = await userCollection.updateOne(filter, updateDoc);
         res.send(result);
-      }else{
-        res.status(403).send({message:'Forbidden access'});
+      } else {
+        res.status(403).send({ message: 'Forbidden access' });
       }
 
     })
@@ -148,6 +154,37 @@ async function run() {
       const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
       res.send({ result, token });
     })
+    //
+    app.patch('/booking/:id', async(req, res) =>{
+      const id  = req.params.id;
+      const payment = req.body;
+      const filter = {_id: ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId
+        }
+      }
+
+      const result = await paymentCollection.insertOne(payment);
+      const updatedBooking = await bookingCollection.updateOne(filter, updatedDoc);
+      res.send(updatedBooking);
+    })
+
+    //
+    app.post('/create-payment-intent', async (req, res) => {
+      const service = req.body;
+      const price = service.totalPrice;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+      res.send({ clientSecret: paymentIntent.client_secret })
+    });
+
+
   }
   finally {
 
