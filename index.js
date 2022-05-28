@@ -34,6 +34,7 @@ async function run() {
     const partsCollection = client.db('laptop_parts').collection('parts');
     const bookingCollection = client.db('laptop_parts').collection('bookings');
     const userCollection = client.db('laptop_parts').collection('users');
+    const reviewCollection = client.db('laptop_parts').collection('reviews');
 
     app.get('/parts', async (req, res) => {
       const query = {};
@@ -59,6 +60,13 @@ async function run() {
         const query = { _id: ObjectId(id) }
         const order = await partsCollection.deleteOne(query);
         res.send(order);
+    })
+    //review get
+    app.get('/review',async(req,res)=>{
+      const query={};
+      // const review=req.body;
+      const result=await reviewCollection.find(query).toArray();
+      res.send(result);
     })
     //post booking
     app.post('/booking', async (req, res) => {
