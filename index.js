@@ -61,20 +61,18 @@ async function run() {
       const part = await partsCollection.deleteOne(query);
       res.send(part);
     })
-    app.delete('/parts/:id', async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) }
-      const order = await partsCollection.deleteOne(query);
-      res.send(order);
+    // post parts
+    app.post('/parts', async (req, res) => {
+      const part = req.body;
+      const result = await partsCollection.insertOne(part);
+      res.send(result);
     })
+
     //review post 
     app.post('/review', async (req, res) => {
       const review = req.body;
-      console.log(review);
-      console.log("this is", req.body.review)
       const result = await reviewCollection.insertOne(review);
       res.send(result);
-
     })
     //review get
     app.get('/review', async (req, res) => {
@@ -155,10 +153,10 @@ async function run() {
       res.send({ result, token });
     })
     //
-    app.patch('/booking/:id', async(req, res) =>{
-      const id  = req.params.id;
+    app.patch('/booking/:id', async (req, res) => {
+      const id = req.params.id;
       const payment = req.body;
-      const filter = {_id: ObjectId(id)};
+      const filter = { _id: ObjectId(id) };
       const updatedDoc = {
         $set: {
           paid: true,
