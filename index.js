@@ -61,6 +61,13 @@ async function run() {
         const order = await partsCollection.deleteOne(query);
         res.send(order);
     })
+    //review post 
+    app.post('/review',async(req,res)=>{
+        const review=req.body;
+        const result=await reviewCollection.insertOne(review);
+        res.send(result);
+
+    })
     //review get
     app.get('/review',async(req,res)=>{
       const query={};
