@@ -71,12 +71,12 @@ async function run() {
 
     })
     //review get
-    // app.get('/review',async(req,res)=>{
-    //   const query={};
-    //   // const review=req.body;
-    //   const result=await reviewCollection.find(query).toArray();
-    //   res.send(result);
-    // })
+    app.get('/review',async(req,res)=>{
+      const query={};
+      // const review=req.body;
+      const result=await reviewCollection.find(query).toArray();
+      res.send(result);
+    })
     //post booking
     app.post('/booking', async (req, res) => {
       const booking = req.body;
